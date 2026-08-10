@@ -77,18 +77,46 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Supplier Reliability Matrix" },
+      { title: "Supplier Reliability Matrix — Procurement Risk Scorecard" },
       { name: "description", content: "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Supplier Reliability Matrix" },
+      { property: "og:site_name", content: "Supplier Reliability Matrix" },
+      { property: "og:title", content: "Supplier Reliability Matrix — Procurement Risk Scorecard" },
       { property: "og:description", content: "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Lovable" },
-      { name: "twitter:title", content: "Supplier Reliability Matrix" },
+      { name: "twitter:title", content: "Supplier Reliability Matrix — Procurement Risk Scorecard" },
       { name: "twitter:description", content: "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time." },
       { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2d2fc559-0b50-4960-800a-589662385cc9" },
       { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/2d2fc559-0b50-4960-800a-589662385cc9" },
+    ],
+    scripts: [
+      {
+        type: "application/ld+json",
+        children: JSON.stringify({
+          "@context": "https://schema.org",
+          "@graph": [
+            {
+              "@type": "Organization",
+              "@id": "https://supplierreliabilitymatrix.lovable.app/#organization",
+              name: "Supplier Reliability Matrix",
+              url: "https://supplierreliabilitymatrix.lovable.app/",
+              description:
+                "Procurement supplier risk scoring built on delivery reliability, sourcing structure and priority weighting.",
+            },
+            {
+              "@type": "WebSite",
+              "@id": "https://supplierreliabilitymatrix.lovable.app/#website",
+              name: "Supplier Reliability Matrix",
+              url: "https://supplierreliabilitymatrix.lovable.app/",
+              description:
+                "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time.",
+              publisher: { "@id": "https://supplierreliabilitymatrix.lovable.app/#organization" },
+            },
+          ],
+        }),
+      },
     ],
     links: [
       {
@@ -103,6 +131,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
     ],
   }),
+
   shellComponent: RootShell,
   component: RootComponent,
   notFoundComponent: NotFoundComponent,
