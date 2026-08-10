@@ -759,7 +759,7 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
       <div className="ledger-toolbar">
         <div className="search-box">
           <Search size={14} color={C.ink} />
-          <input placeholder="Search supplier or location…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input aria-label="Search suppliers" placeholder="Search supplier or location…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="chip-row">
           {TIER_FILTERS.map((t) => (
