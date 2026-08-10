@@ -1,24 +1,30 @@
 import { createFileRoute } from "@tanstack/react-router";
+import SupplierRiskScorecard from "@/components/SupplierRiskScorecard";
 
-// No head() here: the home route inherits title/description/og/twitter from
-// __root.tsx, and ships no og:image so serve-time hosting can inject the
-// project's social preview (explicit og:image or latest screenshot).
 export const Route = createFileRoute("/")({
   component: Index,
+  head: () => ({
+    meta: [
+      { title: "Supplier Reliability Matrix — Risk Scorecard" },
+      {
+        name: "description",
+        content:
+          "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time.",
+      },
+      { property: "og:title", content: "Supplier Reliability Matrix — Risk Scorecard" },
+      {
+        property: "og:description",
+        content:
+          "Score supplier risk from thin procurement data: delivery counts, priority, sourcing structure and peer comparison.",
+      },
+      { property: "og:type", content: "website" },
+      { property: "og:url", content: "/" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+    links: [{ rel: "canonical", href: "/" }],
+  }),
 });
 
-// IMPORTANT: Replace this placeholder. See ./README.md for routing conventions.
 function Index() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
+  return <SupplierRiskScorecard />;
 }
