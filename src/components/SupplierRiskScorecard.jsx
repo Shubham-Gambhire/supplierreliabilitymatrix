@@ -1370,7 +1370,7 @@ export default function App() {
   const [history, setHistory] = useState({});
   const [focusRequest, setFocusRequest] = useState(null);
   const [showMethodology, setShowMethodology] = useState(false);
-  const [storageStatus, setStorageStatus] = useState(hasStorage ? "loading" : "unavailable");
+  const [storageStatus, setStorageStatus] = useState("loading");
   const [saveState, setSaveState] = useState("idle");
   const saveTimer = useRef(null);
   const loadedOnce = useRef(false);
