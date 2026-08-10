@@ -810,16 +810,16 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
                       </button>
                     </td>
                     <td className="sticky-col-2">
-                      <input className="cell-input cell-name" value={s.name} onChange={(e) => updateRow(s.id, { name: e.target.value })} />
+                      <input aria-label={`Supplier name for ${s.name || "new supplier"}`} className="cell-input cell-name" value={s.name} onChange={(e) => updateRow(s.id, { name: e.target.value })} />
                     </td>
                     {visible("location") && (
                       <td>
-                        <input className="cell-input" value={s.location} onChange={(e) => updateRow(s.id, { location: e.target.value })} />
+                        <input aria-label={`Location for ${s.name || "new supplier"}`} className="cell-input" value={s.location} onChange={(e) => updateRow(s.id, { location: e.target.value })} />
                       </td>
                     )}
                     {visible("category") && (
                       <td>
-                        <select className="cell-select" value={s.category || CATEGORY_OPTIONS[0]} onChange={(e) => updateRow(s.id, { category: e.target.value })}>
+                        <select aria-label={`Category for ${s.name || "new supplier"}`} className="cell-select" value={s.category || CATEGORY_OPTIONS[0]} onChange={(e) => updateRow(s.id, { category: e.target.value })}>
                           {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </td>
@@ -831,7 +831,8 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
                     )}
                     {visible("priority") && (
                       <td>
-                        <select className="cell-select" value={s.priority} onChange={(e) => updateRow(s.id, { priority: Number(e.target.value) })}>
+                        <select aria-label={`Priority for ${s.name || "new supplier"}`} className="cell-select" value={s.priority} onChange={(e) => updateRow(s.id, { priority: Number(e.target.value) })}>
+
                           {[1, 2, 3, 4, 5].map((p) => <option key={p} value={p}>P{p}</option>)}
                         </select>
                       </td>
