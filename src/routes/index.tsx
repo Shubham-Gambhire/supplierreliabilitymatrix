@@ -5,13 +5,13 @@ export const Route = createFileRoute("/")({
   component: Index,
   head: () => ({
     meta: [
-      { title: "Supplier Reliability Matrix — Risk Scorecard" },
+      { title: "Supplier Reliability Matrix" },
       {
         name: "description",
         content:
           "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time.",
       },
-      { property: "og:title", content: "Supplier Reliability Matrix — Risk Scorecard" },
+      { property: "og:title", content: "Supplier Reliability Matrix" },
       {
         property: "og:description",
         content:
