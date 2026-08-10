@@ -1231,8 +1231,10 @@ function SettingsView({ config, setConfig, derived, storageStatus, saveState, on
 
   return (
     <div className="stack-lg">
+      <h2 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 4px", letterSpacing: "-0.01em" }}>Settings</h2>
       <section className="panel">
         <h3>Data</h3>
+
         <div className="settings-row">
           <label className="status-label">
             {saveState === "saving" ? <Loader2 size={13} className="spin" /> : storageStatus === "unavailable" ? <AlertCircle size={13} /> : <Check size={13} />}
