@@ -15,7 +15,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Score supplier risk from thin procurement data: delivery counts, priority, sourcing structure and peer comparison.",
+          "A procurement supplier risk scorecard: score delivery reliability, priority and sourcing structure, compare peers and track risk tiers over time.",
       },
       { property: "og:type", content: "website" },
       { property: "og:url", content: "/" },
