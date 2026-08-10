@@ -759,7 +759,7 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
       <div className="ledger-toolbar">
         <div className="search-box">
           <Search size={14} color={C.ink} />
-          <input placeholder="Search supplier or location…" value={query} onChange={(e) => setQuery(e.target.value)} />
+          <input aria-label="Search suppliers" placeholder="Search supplier or location…" value={query} onChange={(e) => setQuery(e.target.value)} />
         </div>
         <div className="chip-row">
           {TIER_FILTERS.map((t) => (
@@ -810,16 +810,16 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
                       </button>
                     </td>
                     <td className="sticky-col-2">
-                      <input className="cell-input cell-name" value={s.name} onChange={(e) => updateRow(s.id, { name: e.target.value })} />
+                      <input aria-label={`Supplier name for ${s.name || "new supplier"}`} className="cell-input cell-name" value={s.name} onChange={(e) => updateRow(s.id, { name: e.target.value })} />
                     </td>
                     {visible("location") && (
                       <td>
-                        <input className="cell-input" value={s.location} onChange={(e) => updateRow(s.id, { location: e.target.value })} />
+                        <input aria-label={`Location for ${s.name || "new supplier"}`} className="cell-input" value={s.location} onChange={(e) => updateRow(s.id, { location: e.target.value })} />
                       </td>
                     )}
                     {visible("category") && (
                       <td>
-                        <select className="cell-select" value={s.category || CATEGORY_OPTIONS[0]} onChange={(e) => updateRow(s.id, { category: e.target.value })}>
+                        <select aria-label={`Category for ${s.name || "new supplier"}`} className="cell-select" value={s.category || CATEGORY_OPTIONS[0]} onChange={(e) => updateRow(s.id, { category: e.target.value })}>
                           {CATEGORY_OPTIONS.map((c) => <option key={c} value={c}>{c}</option>)}
                         </select>
                       </td>
@@ -831,7 +831,8 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
                     )}
                     {visible("priority") && (
                       <td>
-                        <select className="cell-select" value={s.priority} onChange={(e) => updateRow(s.id, { priority: Number(e.target.value) })}>
+                        <select aria-label={`Priority for ${s.name || "new supplier"}`} className="cell-select" value={s.priority} onChange={(e) => updateRow(s.id, { priority: Number(e.target.value) })}>
+
                           {[1, 2, 3, 4, 5].map((p) => <option key={p} value={p}>P{p}</option>)}
                         </select>
                       </td>
@@ -1231,8 +1232,10 @@ function SettingsView({ config, setConfig, derived, storageStatus, saveState, on
 
   return (
     <div className="stack-lg">
+      <h2 style={{ fontSize: 20, fontWeight: 600, margin: "0 0 4px", letterSpacing: "-0.01em" }}>Settings</h2>
       <section className="panel">
         <h3>Data</h3>
+
         <div className="settings-row">
           <label className="status-label">
             {saveState === "saving" ? <Loader2 size={13} className="spin" /> : storageStatus === "unavailable" ? <AlertCircle size={13} /> : <Check size={13} />}
