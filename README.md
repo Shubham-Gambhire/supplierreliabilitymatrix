@@ -5,6 +5,8 @@ risk using only the data a real procurement team can be expected to maintain.
 
 **Live app**: https://supplierreliabilitymatrix.lovable.app
 
+**Project development report (PDF)**: https://supplierreliabilitymatrix.lovable.app/supplier-reliability-matrix-development-report.pdf
+
 Prototype status · Not affiliated with, and containing no data from, any employer. All example
 supplier names, locations and industries are fictional.
 
