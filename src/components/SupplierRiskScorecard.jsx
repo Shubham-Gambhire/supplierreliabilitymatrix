@@ -1653,6 +1653,9 @@ export default function App() {
 
         .methodology-trigger { margin-left: auto; display: flex; align-items: center; gap: 6px; padding: 8px 10px; border: none; background: transparent; color: ${C.ink}; opacity: 0.7; font-size: 12.5px; font-family: ${F_BODY}; cursor: pointer; white-space: nowrap; }
         .methodology-trigger:hover { opacity: 1; text-decoration: underline; }
+        .github-link { align-self: center; margin-left: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; color: ${C.ink}; opacity: 0.7; font-size: 12.5px; text-decoration: none; white-space: nowrap; }
+        .github-link:hover { opacity: 1; text-decoration: underline; }
+
 
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; z-index: 100; overflow-y: auto; }
         .modal-panel { background: ${C.surface}; border-radius: 6px; max-width: 900px; width: 100%; max-height: calc(100vh - 80px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
@@ -1775,6 +1778,15 @@ export default function App() {
             </button>
           );
         })}
+        <a
+          className="github-link"
+          href="https://github.com/Shubham-Gambhire/supplierreliabilitymatrix"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View this project on GitHub"
+        >
+          <Github size={14} /> GitHub <ArrowUpRight size={12} />
+        </a>
         <button className="methodology-trigger" onClick={() => setShowMethodology(true)}>
           <BookOpen size={13} /> How this is scored
         </button>
