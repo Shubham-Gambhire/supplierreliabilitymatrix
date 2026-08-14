@@ -142,3 +142,9 @@
     color: var(--color-foreground);
   }
 }
+
+/* Globally hide the Lovable badge */
+#lovable-badge {
+  display: none !important;
+}
+

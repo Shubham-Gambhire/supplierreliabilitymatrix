@@ -5,6 +5,7 @@ import {
   Settings2, FileText, AlertTriangle, RotateCcw, Info, BookOpen,
   LayoutGrid, ListChecks, ArrowUpDown, Building2, Check, History,
   TrendingUp, TrendingDown, Minus, DollarSign, Loader2, AlertCircle, Columns, Linkedin,
+  Github, ArrowUpRight,
 } from "lucide-react";
 
 /* =====================================================================
@@ -1019,6 +1020,98 @@ function MethodologyView({ config }) {
   return (
     <div className="stack-lg doc">
       <section className="panel">
+        <h3>Project development report</h3>
+        <p className="note-line">
+          Prepared by Shubham Gambhire, August 2026. Prototype status; not affiliated with, and
+          containing no data from, any employer.
+        </p>
+        <p>
+          The Supplier Reliability Matrix is a self-contained, browser-based tool that scores
+          suppliers on delivery reliability and sourcing risk using only the data a real
+          procurement team can be expected to maintain. The scoring logic originates from a
+          supplier risk scorecard built in Excel during an internship, used to flag suppliers worth
+          a closer look ahead of a sourcing or renewal decision. It is rebuilt here as an
+          interactive prototype: an editable supplier ledger, a live risk-matrix visualization, a
+          fully tunable scoring engine, and a methodology that states its own limitations rather
+          than hiding them.
+        </p>
+        <p><strong>Objectives</strong></p>
+        <ul className="doc-list">
+          <li>Reimplement a real, spreadsheet-based scoring methodology as an explorable tool rather
+          than a static report.</li>
+          <li>Make a deliberate methodological simplification and defend it on its merits.</li>
+          <li>Ship something closer to a working internal tool than a portfolio mockup: editable
+          data, persistence, validation, and a documented methodology a stakeholder could question.</li>
+          <li>Arrive at a visual identity grounded in the subject matter rather than template
+          dashboard design.</li>
+        </ul>
+        <p><strong>Architecture and stack</strong></p>
+        <ul className="doc-list">
+          <li>React functional components and hooks, no external backend, entirely client-side.</li>
+          <li>Hand-built SVG for the risk matrix, chosen over a charting library for control over
+          quadrant shading, spend-based bubble sizing, and click-to-navigate.</li>
+          <li>PapaParse for CSV import and export, with fuzzy column-header matching.</li>
+          <li>lucide-react iconography; hand-written CSS with design tokens, no component library.</li>
+          <li>Browser-scoped persistence with debounced autosave and a two-step reset guard.</li>
+        </ul>
+        <p><strong>What the tool does</strong></p>
+        <ul className="doc-list">
+          <li><strong>Register:</strong> a Spend at Risk hero KPI, the reliability matrix, tier
+          tally, a Critical/High watchlist, category laggards, and manual snapshot recording.</li>
+          <li><strong>Supplier Ledger:</strong> fully inline-editable grid, sortable, filterable and
+          searchable, sticky identity columns, column show/hide, CSV import/export, undo-able
+          deletion, and a per-row breakdown of every intermediate number.</li>
+          <li><strong>Settings:</strong> every weight, threshold, multiplier and guard below is
+          editable and recalculates the whole tool live.</li>
+        </ul>
+        <p><strong>Design evolution</strong></p>
+        <p>
+          An early dark, control-tower direction borrowed from an unrelated project was abandoned
+          for an enterprise procurement ledger identity: parchment palette, institutional navy, a
+          brass accent for priority. A confidentiality pass replaced every example supplier name and
+          location with fully fictional alternatives. A professionalization pass swapped permanent
+          callouts for on-demand tooltips, moved this methodology into an overlay, and reduced
+          decorative color. A quality-of-life pass added sticky columns, column visibility, and
+          undo-based deletion.
+        </p>
+        <p><strong>Privacy</strong></p>
+        <p>
+          All example supplier names, locations and industries are invented and none are derived
+          from any real dataset beyond matching its general statistical shape. There is no backend
+          server; persisted data stays in this browser and is never transmitted. Any
+          watchlist-style feature is illustrative and is not a sanctions or denied-party screening.
+        </p>
+        <p><strong>Testing and validation</strong></p>
+        <ul className="doc-list">
+          <li>Static parse verification and server-rendered smoke tests across every tab.</li>
+          <li>Simulated-browser testing of the autosave-and-reload cycle, snapshot history,
+          undo-delete, column toggling, modal behavior, and matrix-to-ledger navigation.</li>
+          <li>Computed scores cross-checked against the original spreadsheet's output values.</li>
+          <li>Edge cases: zero suppliers on file, on-time deliveries exceeding total orders, and
+          negative spend entry, the last two of which surfaced validation fixes now enforced at both
+          the input and calculation layers.</li>
+        </ul>
+        <p><strong>Known limitations and next steps</strong></p>
+        <table className="ref-table">
+          <thead><tr><th>Gap</th><th>Why it was left out</th><th>Possible next step</th></tr></thead>
+          <tbody>
+            <tr><td>No lead time, last-order-date, owner or Incoterms fields</td><td>Scoped out to keep the field set defensible against thin procurement data</td><td>An optional second tier of fields once core scoring is validated in use</td></tr>
+            <tr><td>No shareable PDF or print export</td><td>CSV export covers the data; a formatted report was out of scope</td><td>A print stylesheet or generated summary export</td></tr>
+            <tr><td>No fleet-level "what changed" summary</td><td>Per-supplier trend exists; an aggregate roll-up does not yet</td><td>Summarize tier movement across all suppliers since the last snapshot</td></tr>
+            <tr><td>No bulk supplier actions</td><td>Single-row editing was sufficient at the current supplier count</td><td>Multi-select with bulk priority or category edits</td></tr>
+            <tr><td>No mobile-specific layout</td><td>Dense data grids are the core use case, prioritized for desktop</td><td>A condensed mobile view of the Register and Ledger</td></tr>
+            <tr><td>Peer comparison can be masked category-wide</td><td>Inherent to any peer-relative signal; mitigated by keeping it secondary</td><td>A category-level alert when an entire category trends downward</td></tr>
+          </tbody>
+        </table>
+        <p className="note-line">
+          The position this prototype argues: a transparent, thinly-parameterized scoring model can
+          outperform a more sophisticated one when the real constraint is data quality rather than
+          analytical power. The sections below record how that model works, end to end.
+        </p>
+      </section>
+
+      <section className="panel">
+
         <h3>Why six fields, not sixteen</h3>
         <p>
           A textbook supplier-scoring model reaches for lead time variance, quality rejection
@@ -1560,6 +1653,9 @@ export default function App() {
 
         .methodology-trigger { margin-left: auto; display: flex; align-items: center; gap: 6px; padding: 8px 10px; border: none; background: transparent; color: ${C.ink}; opacity: 0.7; font-size: 12.5px; font-family: ${F_BODY}; cursor: pointer; white-space: nowrap; }
         .methodology-trigger:hover { opacity: 1; text-decoration: underline; }
+        .github-link { align-self: center; margin-left: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; color: ${C.ink}; opacity: 0.7; font-size: 12.5px; text-decoration: none; white-space: nowrap; }
+        .github-link:hover { opacity: 1; text-decoration: underline; }
+
 
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; z-index: 100; overflow-y: auto; }
         .modal-panel { background: ${C.surface}; border-radius: 6px; max-width: 900px; width: 100%; max-height: calc(100vh - 80px); display: flex; flex-direction: column; box-shadow: 0 20px 60px rgba(0,0,0,0.35); }
@@ -1682,6 +1778,15 @@ export default function App() {
             </button>
           );
         })}
+        <a
+          className="github-link"
+          href="https://github.com/Shubham-Gambhire/supplierreliabilitymatrix"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="View this project on GitHub"
+        >
+          <Github size={14} /> GitHub <ArrowUpRight size={12} />
+        </a>
         <button className="methodology-trigger" onClick={() => setShowMethodology(true)}>
           <BookOpen size={13} /> How this is scored
         </button>
