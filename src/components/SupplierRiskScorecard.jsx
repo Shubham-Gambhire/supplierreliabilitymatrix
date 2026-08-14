@@ -1016,6 +1016,8 @@ function SupplierDetail({ s, config, history }) {
 /* =====================================================================
    METHODOLOGY VIEW
 ===================================================================== */
+const REPORT_PDF_URL = "/supplier-reliability-matrix-development-report.pdf";
+
 function MethodologyView({ config }) {
   return (
     <div className="stack-lg doc">
