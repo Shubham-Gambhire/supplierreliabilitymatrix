@@ -1589,6 +1589,9 @@ export default function App() {
         .methodology-trigger:hover { opacity: 1; text-decoration: underline; }
         .github-link { align-self: center; margin-left: 10px; display: inline-flex; align-items: center; gap: 5px; padding: 8px 10px; color: ${C.ink}; opacity: 0.7; font-size: 12.5px; text-decoration: none; white-space: nowrap; }
         .github-link:hover { opacity: 1; text-decoration: underline; }
+        .report-link { display: inline-flex; align-items: center; gap: 8px; margin: 4px 0 10px; padding: 10px 14px; border: 1px solid ${C.navy}; border-radius: 4px; background: ${C.surfaceAlt}; color: ${C.navy}; font-size: 13px; font-weight: 600; text-decoration: none; }
+        .report-link:hover { background: ${C.navy}; color: ${C.surface}; }
+
 
 
         .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.45); display: flex; align-items: flex-start; justify-content: center; padding: 40px 20px; z-index: 100; overflow-y: auto; }
