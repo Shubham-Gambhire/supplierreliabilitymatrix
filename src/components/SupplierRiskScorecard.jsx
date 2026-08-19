@@ -1503,7 +1503,7 @@ export default function App() {
 
         .masthead { max-width: 1080px; margin: 0 auto; padding: 36px 24px 0; }
         .masthead .title-row { display: flex; align-items: center; gap: 14px; }
-        .masthead .brand-logo { width: 44px; height: 44px; flex: 0 0 44px; object-fit: contain; border-radius: 6px; }
+        .masthead .brand-logo { height: 32px; width: auto; flex: 0 0 auto; object-fit: contain; display: block; }
         .masthead h1 { font-family: ${F_DISPLAY}; font-size: 34px; font-weight: 600; margin: 6px 0 6px; letter-spacing: -0.01em; }
         .masthead .sub { font-family: ${F_BODY}; color: ${C.inkMuted}; font-size: 14px; max-width: 620px; line-height: 1.55; margin: 0 0 16px; }
         .meta-row { display: flex; gap: 18px; flex-wrap: wrap; font-family: ${F_DATA}; font-size: 11px; color: ${C.inkMuted}; border-top: 1px solid ${C.paperLineStrong}; border-bottom: 1px solid ${C.paperLineStrong}; padding: 10px 0; margin-bottom: 0; }
