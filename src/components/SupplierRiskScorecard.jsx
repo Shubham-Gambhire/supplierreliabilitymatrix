@@ -597,8 +597,10 @@ const COLUMN_DEFS = [
   { key: "trend", label: "Trend" },
 ];
 
-function ColumnsMenu({ hiddenCols, toggleCol }) {
+function ColumnsMenu({ hiddenCols, toggleCol, customCols, addCustomCol, removeCustomCol }) {
   const [open, setOpen] = useState(false);
+  const [newLabel, setNewLabel] = useState("");
+  const [newType, setNewType] = useState("text");
   const ref = useRef(null);
   useEffect(() => {
     if (!open) return;
@@ -606,24 +608,66 @@ function ColumnsMenu({ hiddenCols, toggleCol }) {
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, [open]);
+  const submitNew = (e) => {
+    e.preventDefault();
+    const label = newLabel.trim();
+    if (!label) return;
+    addCustomCol(label, newType);
+    setNewLabel("");
+    setNewType("text");
+  };
   return (
     <div className="columns-menu" ref={ref}>
       <button className="btn-outline" onClick={() => setOpen((o) => !o)}><Columns size={13} /> Columns</button>
       {open && (
         <div className="columns-panel">
+          <div className="columns-panel-label">Standard columns</div>
           {COLUMN_DEFS.map((c) => (
             <label key={c.key} className="columns-panel-item">
               <input type="checkbox" checked={!hiddenCols.has(c.key)} onChange={() => toggleCol(c.key)} />
               {c.label}
             </label>
           ))}
+          {customCols.length > 0 && (
+            <>
+              <div className="columns-panel-label">Custom columns</div>
+              {customCols.map((c) => (
+                <div key={c.id} className="columns-panel-item custom">
+                  <label className="columns-panel-check">
+                    <input type="checkbox" checked={!hiddenCols.has(c.id)} onChange={() => toggleCol(c.id)} />
+                    <span className="col-label-text">{c.label}</span>
+                  </label>
+                  <button className="col-remove" onClick={() => removeCustomCol(c.id)} aria-label={`Remove ${c.label} column`}>
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))}
+            </>
+          )}
+          <form className="columns-add" onSubmit={submitNew}>
+            <div className="columns-panel-label">Add column</div>
+            <input
+              className="columns-add-input"
+              aria-label="New column name"
+              placeholder="Column name"
+              value={newLabel}
+              onChange={(e) => setNewLabel(e.target.value)}
+            />
+            <div className="columns-add-row">
+              <select aria-label="New column type" className="cell-select" value={newType} onChange={(e) => setNewType(e.target.value)}>
+                <option value="text">Text</option>
+                <option value="number">Number</option>
+              </select>
+              <button type="submit" className="btn-primary"><Plus size={12} /> Add</button>
+            </div>
+          </form>
         </div>
       )}
     </div>
   );
 }
 
-function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRequest }) {
+function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRequest, customCols, setCustomCols }) {
   const [query, setQuery] = useState("");
   const [tierFilter, setTierFilter] = useState("All");
   const [sortKey, setSortKey] = useState(null);
@@ -657,7 +701,24 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
     });
   };
   const visible = (key) => !hiddenCols.has(key);
-  const visibleColCount = 3 + COLUMN_DEFS.filter((c) => visible(c.key)).length;
+  const visibleCustomCols = customCols.filter((c) => visible(c.id));
+  const visibleColCount = 3 + COLUMN_DEFS.filter((c) => visible(c.key)).length + visibleCustomCols.length;
+
+  const addCustomCol = (label, type) => {
+    setCustomCols((prev) => [...prev, { id: `col_${newId()}`, label, type: type === "number" ? "number" : "text" }]);
+  };
+  const removeCustomCol = (id) => {
+    setCustomCols((prev) => prev.filter((c) => c.id !== id));
+    setSuppliers((prev) => prev.map((s) => {
+      if (!s.custom || !(id in s.custom)) return s;
+      const nextCustom = { ...s.custom };
+      delete nextCustom[id];
+      return { ...s, custom: nextCustom };
+    }));
+  };
+  const updateCustomValue = (supplierId, colId, value) => {
+    setSuppliers((prev) => prev.map((s) => (s.id === supplierId ? { ...s, custom: { ...(s.custom || {}), [colId]: value } } : s)));
+  };
 
   const updateRow = (id, patch) => {
     setSuppliers((prev) => prev.map((s) => (s.id === id ? { ...s, ...patch } : s)));
@@ -705,15 +766,19 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
   };
 
   const exportCsv = () => {
-    const rows = derived.map((s) => ({
-      "Supplier Name": s.name, Location: s.location, Category: s.category || "",
-      "Annual Spend": s.annualSpend || 0, Priority: s.priority,
-      "Single Source": s.singleSource ? "Y" : "N", "On-Time Deliveries": s.onTimeDeliveries,
-      "Total POs": s.totalPOs, "On-Time Rate %": s.onTimeRate !== null ? round2(s.onTimeRate * 100) : "",
-      "Delivery Score": s.deliveryScore ?? "", "Dependency Score": s.dependencyScore,
-      "Performance Score": s.performanceScore ?? "", "Priority Multiplier": s.multiplier,
-      "Risk Score": s.riskScore ?? "", "Risk Tier": s.riskTier,
-    }));
+    const rows = derived.map((s) => {
+      const base = {
+        "Supplier Name": s.name, Location: s.location, Category: s.category || "",
+        "Annual Spend": s.annualSpend || 0, Priority: s.priority,
+        "Single Source": s.singleSource ? "Y" : "N", "On-Time Deliveries": s.onTimeDeliveries,
+        "Total POs": s.totalPOs, "On-Time Rate %": s.onTimeRate !== null ? round2(s.onTimeRate * 100) : "",
+        "Delivery Score": s.deliveryScore ?? "", "Dependency Score": s.dependencyScore,
+        "Performance Score": s.performanceScore ?? "", "Priority Multiplier": s.multiplier,
+        "Risk Score": s.riskScore ?? "", "Risk Tier": s.riskTier,
+      };
+      customCols.forEach((c) => { base[c.label] = (s.custom && s.custom[c.id] !== undefined) ? s.custom[c.id] : ""; });
+      return base;
+    });
     const csv = Papa.unparse(rows);
     const blob = new Blob([csv], { type: "text/csv" });
     const url = URL.createObjectURL(blob);
@@ -771,7 +836,7 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
           ))}
         </div>
         <div className="toolbar-actions">
-          <ColumnsMenu hiddenCols={hiddenCols} toggleCol={toggleCol} />
+          <ColumnsMenu hiddenCols={hiddenCols} toggleCol={toggleCol} customCols={customCols} addCustomCol={addCustomCol} removeCustomCol={removeCustomCol} />
           <button className="btn-outline" onClick={() => fileRef.current?.click()}><Upload size={13} /> Import CSV</button>
           <input ref={fileRef} type="file" accept=".csv" hidden onChange={(e) => e.target.files[0] && importCsv(e.target.files[0])} />
           <button className="btn-outline" onClick={exportCsv}><Download size={13} /> Export CSV</button>
@@ -796,6 +861,9 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
               {visible("riskScore") && <SortHead label="Risk score" sk="riskScore" align="right" />}
               {visible("riskTier") && <th>Risk tier</th>}
               {visible("trend") && <th>Trend</th>}
+              {visibleCustomCols.map((c) => (
+                <th key={c.id} style={{ textAlign: c.type === "number" ? "right" : "left" }}>{c.label}</th>
+              ))}
               <th style={{ width: 32 }}></th>
             </tr>
           </thead>
@@ -879,6 +947,18 @@ function LedgerView({ suppliers, setSuppliers, derived, config, history, focusRe
                     {visible("trend") && (
                       <td className="data-cell"><TrendIndicator supplierId={s.id} riskScore={s.riskScore} history={history} /></td>
                     )}
+                    {visibleCustomCols.map((c) => (
+                      <td key={c.id} style={{ textAlign: c.type === "number" ? "right" : "left" }}>
+                        <input
+                          aria-label={`${c.label} for ${s.name || "new supplier"}`}
+                          className="cell-input"
+                          type={c.type === "number" ? "number" : "text"}
+                          style={c.type === "number" ? { textAlign: "right" } : undefined}
+                          value={(s.custom && s.custom[c.id] !== undefined && s.custom[c.id] !== null) ? s.custom[c.id] : ""}
+                          onChange={(e) => updateCustomValue(s.id, c.id, c.type === "number" ? (e.target.value === "" ? "" : Number(e.target.value)) : e.target.value)}
+                        />
+                      </td>
+                    ))}
                     <td>
                       <button className="row-delete" onClick={() => requestDelete(s)} aria-label={`Remove ${s.name}`}>
                         <Trash2 size={13} />
@@ -1395,6 +1475,7 @@ export default function App() {
     peerGapThreshold: DEFAULT_PEER_GAP_THRESHOLD,
   });
   const [history, setHistory] = useState({});
+  const [customCols, setCustomCols] = useState([]);
   const [focusRequest, setFocusRequest] = useState(null);
   const [showMethodology, setShowMethodology] = useState(false);
   const [storageStatus, setStorageStatus] = useState("loading");
@@ -1415,6 +1496,7 @@ export default function App() {
           if (Array.isArray(parsed.suppliers) && parsed.suppliers.length) setSuppliers(parsed.suppliers);
           if (parsed.config) setConfig((prev) => ({ ...prev, ...parsed.config }));
           if (parsed.history) setHistory(parsed.history);
+          if (Array.isArray(parsed.customCols)) setCustomCols(parsed.customCols);
         }
       } catch (e) {
         // No saved session yet, or storage briefly unavailable: keep the seed defaults on screen.
@@ -1434,7 +1516,7 @@ export default function App() {
     if (saveTimer.current) clearTimeout(saveTimer.current);
     saveTimer.current = setTimeout(async () => {
       try {
-        await localStore.set(STORAGE_KEY, JSON.stringify({ suppliers, config, history }));
+        await localStore.set(STORAGE_KEY, JSON.stringify({ suppliers, config, history, customCols }));
         setSaveState("saved");
       } catch (e) {
         setSaveState("error");
@@ -1455,6 +1537,7 @@ export default function App() {
       peerGapThreshold: DEFAULT_PEER_GAP_THRESHOLD,
     });
     setHistory({});
+    setCustomCols([]);
   };
 
   const derived = useMemo(() => {
@@ -1491,7 +1574,7 @@ export default function App() {
         .ledger-app * { box-sizing: border-box; }
         .ledger-app {
           background: ${C.paper};
-          min-height: 100vh; color: ${C.ink}; font-family: ${F_BODY};
+          min-height: 100vh; color: ${C.ink}; font-family: ${F_BODY}; overflow-x: hidden;
         }
         .ledger-app ::-webkit-scrollbar { width: 8px; height: 8px; }
         .ledger-app ::-webkit-scrollbar-thumb { background: ${C.paperLineStrong}; border-radius: 4px; }
@@ -1522,7 +1605,8 @@ export default function App() {
         .footer-linkedin { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; color: ${C.navy}; text-decoration: none; font-weight: 600; }
         .footer-linkedin:hover { text-decoration: underline; }
 
-        .stack-lg { display: flex; flex-direction: column; gap: 22px; }
+        .stack-lg { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+        .stack-lg > * { min-width: 0; }
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 18px; }
         @media (max-width: 980px) { .grid-2 { grid-template-columns: 1fr 1fr; } }
         @media (max-width: 640px) { .grid-2 { grid-template-columns: 1fr; } }
@@ -1580,7 +1664,7 @@ export default function App() {
 
         .info-tip { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 15px; height: 15px; border-radius: 50%; border: 1px solid ${C.ink}; font-size: 10px; font-family: ${F_DATA}; font-weight: 600; cursor: help; opacity: 0.55; }
         .info-tip:hover, .info-tip:focus { opacity: 1; outline: none; }
-        .info-tip-bubble { visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 0; width: 240px; background: ${C.ink}; color: ${C.surface}; font-family: ${F_BODY}; font-weight: 400; font-size: 11.5px; line-height: 1.55; padding: 9px 11px; border-radius: 4px; transition: opacity 0.15s ease; z-index: 30; pointer-events: none; }
+        .info-tip-bubble { visibility: hidden; opacity: 0; position: absolute; bottom: 130%; left: 0; width: 240px; max-width: calc(100vw - 40px); background: ${C.ink}; color: ${C.surface}; font-family: ${F_BODY}; font-weight: 400; font-size: 11.5px; line-height: 1.55; padding: 9px 11px; border-radius: 4px; transition: opacity 0.15s ease; z-index: 30; pointer-events: none; }
         .info-tip:hover .info-tip-bubble, .info-tip:focus .info-tip-bubble { visibility: visible; opacity: 1; }
         .data-privacy-note { font-size: 11.5px; opacity: 0.7; }
 
@@ -1620,8 +1704,20 @@ export default function App() {
         .columns-panel { position: absolute; top: calc(100% + 6px); right: 0; background: ${C.surface}; border: 1px solid ${C.paperLineStrong}; border-radius: 5px; padding: 8px; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 20; min-width: 170px; }
         .columns-panel-item { display: flex; align-items: center; gap: 8px; font-size: 12.5px; padding: 5px 4px; cursor: pointer; white-space: nowrap; }
         .columns-panel-item:hover { background: ${C.surfaceAlt}; }
+        .columns-panel { max-height: 70vh; overflow-y: auto; max-width: calc(100vw - 32px); }
+        .columns-panel-label { font-size: 10px; text-transform: uppercase; letter-spacing: 0.07em; color: ${C.inkFaint}; font-family: ${F_DATA}; padding: 8px 4px 3px; border-top: 1px solid ${C.paperLine}; margin-top: 4px; }
+        .columns-panel-label:first-child { border-top: none; margin-top: 0; padding-top: 2px; }
+        .columns-panel-item.custom { justify-content: space-between; gap: 6px; }
+        .columns-panel-check { display: flex; align-items: center; gap: 8px; cursor: pointer; min-width: 0; }
+        .col-label-text { overflow: hidden; text-overflow: ellipsis; max-width: 150px; }
+        .col-remove { border: none; background: transparent; color: ${C.inkMuted}; cursor: pointer; padding: 2px 3px; border-radius: 3px; display: inline-flex; }
+        .col-remove:hover { color: ${C.danger || C.navy}; background: ${C.surfaceAlt}; }
+        .columns-add { display: flex; flex-direction: column; gap: 6px; padding: 2px 4px 4px; }
+        .columns-add-input { border: 1px solid ${C.paperLineStrong}; border-radius: 4px; padding: 6px 7px; font-size: 12.5px; background: ${C.surface}; color: ${C.ink}; width: 100%; }
+        .columns-add-row { display: flex; gap: 6px; align-items: center; }
+        .columns-add-row .cell-select { flex: 1; }
 
-        .ledger-scroll { overflow-x: auto; border: 1px solid ${C.paperLineStrong}; border-radius: 4px; position: relative; }
+        .ledger-scroll { overflow-x: auto; max-width: 100%; border: 1px solid ${C.paperLineStrong}; border-radius: 4px; position: relative; -webkit-overflow-scrolling: touch; }
         .ledger-table { width: 100%; border-collapse: collapse; min-width: 980px; font-size: 12.5px; }
         .ledger-table thead th { text-align: left; font-size: 10.5px; text-transform: uppercase; letter-spacing: 0.06em; color: ${C.inkMuted}; background: ${C.surfaceAlt}; padding: 9px 8px; border-bottom: 1px solid ${C.paperLineStrong}; white-space: nowrap; }
         .th-sort { cursor: pointer; display: table-cell; }
@@ -1686,6 +1782,55 @@ export default function App() {
         .reset-all-btn { color: ${C.critical}; border-color: ${C.critical}; margin-top: 4px; }
         .reset-all-btn.armed { background: ${C.criticalDim}; }
         .warn-line { font-size: 11.5px; color: ${C.high}; margin-top: 4px; }
+
+        /* ---- Responsive: tablet ---- */
+        @media (max-width: 900px) {
+          .masthead { padding: 26px 18px 0; }
+          .masthead h1 { font-size: 28px; }
+          .masthead .sub { font-size: 13.5px; }
+          .tabbar { padding: 0 18px; -webkit-overflow-scrolling: touch; }
+          .content-wrap { padding: 18px 18px 48px; }
+          .app-footer { padding: 16px 18px 28px; }
+          .hero-stat-value { font-size: 34px; }
+          .kpi-hero-row { gap: 20px; }
+          .ledger-toolbar { align-items: stretch; }
+          .toolbar-actions { flex-wrap: wrap; }
+        }
+
+        /* ---- Responsive: phone ---- */
+        @media (max-width: 640px) {
+          .masthead { padding: 20px 14px 0; }
+          .masthead .title-row { gap: 10px; }
+          .masthead .brand-logo { height: 26px; }
+          .masthead h1 { font-size: 23px; line-height: 1.2; }
+          .masthead .sub { font-size: 13px; }
+          .meta-row { gap: 10px 14px; font-size: 10.5px; }
+          .tabbar { padding: 0 14px; gap: 4px; scrollbar-width: none; }
+          .tabbar::-webkit-scrollbar { display: none; }
+          .tab-btn { padding: 9px 12px; font-size: 12px; }
+          .content-wrap { padding: 16px 14px 40px; }
+          .app-footer { padding: 14px 14px 24px; flex-direction: column; align-items: flex-start; gap: 8px; }
+          .footer-linkedin { margin-left: 0; }
+          .panel { padding: 14px 14px; }
+          .panel h3 { font-size: 15.5px; }
+          .hero-stat-value { font-size: 30px; }
+          .kpi-hero-row { gap: 16px; }
+          .stat-strip { align-self: flex-start; }
+          .ledger-toolbar { flex-direction: column; align-items: stretch; gap: 10px; }
+          .search-box { min-width: 0; width: 100%; }
+          .chip-row { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 2px; scrollbar-width: none; }
+          .chip-row::-webkit-scrollbar { display: none; }
+          .toolbar-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+          .toolbar-actions > * { width: 100%; }
+          .toolbar-actions .btn-outline, .toolbar-actions .btn-primary { width: 100%; justify-content: center; }
+          .columns-menu { position: relative; }
+          .columns-panel { right: auto; left: 0; min-width: 200px; }
+          .ledger-table { min-width: 760px; font-size: 12px; }
+          .sticky-col-2 { min-width: 130px; }
+          .cell-name { min-width: 110px; }
+          .ref-table { font-size: 12px; }
+          .undo-toast { left: 12px; right: 12px; bottom: 12px; }
+        }
       `}</style>
 
 
@@ -1733,7 +1878,7 @@ export default function App() {
 
       <div className="content-wrap">
         {tab === "register" && <RegisterView derived={derived} onSelectSupplier={goToSupplier} onRecordSnapshot={recordSnapshot} lastSnapshotAt={lastSnapshotAt} />}
-        {tab === "ledger" && <LedgerView suppliers={suppliers} setSuppliers={setSuppliers} derived={derived} config={config} history={history} focusRequest={focusRequest} />}
+        {tab === "ledger" && <LedgerView suppliers={suppliers} setSuppliers={setSuppliers} derived={derived} config={config} history={history} focusRequest={focusRequest} customCols={customCols} setCustomCols={setCustomCols} />}
         {tab === "settings" && <SettingsView config={config} setConfig={setConfig} derived={derived} storageStatus={storageStatus} saveState={saveState} onResetAll={resetAllData} />}
       </div>
 
