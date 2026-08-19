@@ -1,5 +1,6 @@
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import Papa from "papaparse";
+import logoAsset from "@/assets/supplier-matrix-logo.png.asset.json";
 import {
   Search, Upload, Download, Plus, Trash2, X, ChevronDown, ChevronUp,
   Settings2, FileText, AlertTriangle, RotateCcw, Info, BookOpen,
@@ -1023,25 +1024,21 @@ function MethodologyView({ config }) {
     <div className="stack-lg doc">
       <section className="panel">
         <h3>Project development report</h3>
-        <p>
-          The full project development document — origin, objectives, scoring methodology,
-          architecture, design evolution, testing approach, and known limitations — is available as
-          a PDF.
-        </p>
-        <a
-          className="report-link"
-          href={REPORT_PDF_URL}
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <FileText size={15} /> Open the development report (PDF, 10 pages)
-          <ArrowUpRight size={13} />
-        </a>
-        <p className="note-line">
-          Prepared by Shubham Gambhire, August 2026. Opens in a new tab. Prototype status; not
-          affiliated with, and containing no data from, any employer.
-        </p>
-      </section>
+          <p>
+            The full project development document covers origin, objectives, scoring methodology,
+            architecture, design evolution, testing approach, and known limitations, and is available as
+            a PDF.
+          </p>
+          <a
+            className="report-link"
+            href={REPORT_PDF_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <FileText size={15} /> Open the development report (PDF, 10 pages)
+            <ArrowUpRight size={13} />
+          </a>
+        </section>
 
       <section className="panel">
 
@@ -1505,6 +1502,8 @@ export default function App() {
         @keyframes spin { to { transform: rotate(360deg); } }
 
         .masthead { max-width: 1080px; margin: 0 auto; padding: 36px 24px 0; }
+        .masthead .title-row { display: flex; align-items: center; gap: 14px; }
+        .masthead .brand-logo { width: 44px; height: 44px; flex: 0 0 44px; object-fit: contain; border-radius: 6px; }
         .masthead h1 { font-family: ${F_DISPLAY}; font-size: 34px; font-weight: 600; margin: 6px 0 6px; letter-spacing: -0.01em; }
         .masthead .sub { font-family: ${F_BODY}; color: ${C.inkMuted}; font-size: 14px; max-width: 620px; line-height: 1.55; margin: 0 0 16px; }
         .meta-row { display: flex; gap: 18px; flex-wrap: wrap; font-family: ${F_DATA}; font-size: 11px; color: ${C.inkMuted}; border-top: 1px solid ${C.paperLineStrong}; border-bottom: 1px solid ${C.paperLineStrong}; padding: 10px 0; margin-bottom: 0; }
@@ -1690,12 +1689,15 @@ export default function App() {
       `}</style>
 
 
-      <div className="masthead">
-        <h1>Supplier Reliability Matrix</h1>
-        <p className="sub">
-          A risk scorecard built for procurement data as it actually exists: thin, inconsistent,
-          and rarely tracking more than delivery counts, priority, and sourcing structure.
-        </p>
+        <div className="masthead">
+          <div className="title-row">
+            <img src={logoAsset.url} alt="Supplier Reliability Matrix logo" className="brand-logo" />
+            <h1>Supplier Reliability Matrix</h1>
+          </div>
+          <p className="sub">
+            A procurement risk scorecard that turns delivery performance, priority, and sourcing
+            structure into clear, actionable reliability and risk signals.
+          </p>
         <div className="meta-row">
           <span>Suppliers on file: <b>{suppliers.length}</b></span>
           <span>Scored: <b>{derived.filter((s) => !s.insufficient).length}</b></span>
