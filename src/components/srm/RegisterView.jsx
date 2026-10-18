@@ -32,7 +32,7 @@ function RiskMatrix({ suppliers, colorBy, onSelectSupplier, config }) {
   const midX = x(refRate),
     midY = y(3);
 
-  const maxSpend = plottable.reduce((m, s) => Math.max(m, Number(s.annualSpend) || 0), 0);
+  const maxSpend = plottable.reduce((m, s) => Math.max(m, s.spendValue ?? 0), 0);
   const RMAX = 18,
     RVIS = 3;
   // Area proportional to spend (r ∝ sqrt(spend)); a visible minimum radius is disclosed in the legend.
@@ -58,7 +58,7 @@ function RiskMatrix({ suppliers, colorBy, onSelectSupplier, config }) {
   const overlapping = Array.from(posCounts.values())
     .filter((n) => n > 1)
     .reduce((a, n) => a + n, 0);
-  const sorted = [...plottable].sort((a, b) => b.annualSpend - a.annualSpend); // draw big first, small on top
+  const sorted = [...plottable].sort((a, b) => (b.spendValue ?? 0) - (a.spendValue ?? 0)); // draw big first, small on top
 
   if (plottable.length === 0) {
     return (
@@ -210,13 +210,13 @@ function RiskMatrix({ suppliers, colorBy, onSelectSupplier, config }) {
             onClick={() => onSelectSupplier(s.id)}
           >
             <circle
-              r={radius(Number(s.annualSpend) || 0)}
+              r={radius(s.spendValue ?? 0)}
               fill={pointColor(s)}
               stroke={C.surface}
               strokeWidth="1.5"
               opacity="0.85"
             />
-            <title>{`${s.name}: ${pct(s.onTimeRate)} on-time, dependency ${s.dependencyScore}/5, ${formatCurrency(s.annualSpend)} spend, ${s.riskTier}`}</title>
+            <title>{`${s.name}: ${pct(s.onTimeRate)} on-time, dependency ${s.dependencyScore}/5, ${formatCurrency(s.spendValue)} spend, ${s.riskTier}`}</title>
           </g>
         ))}
       </svg>
@@ -260,7 +260,7 @@ function RiskMatrix({ suppliers, colorBy, onSelectSupplier, config }) {
             <li key={s.id}>
               <button type="button" className="link-btn" onClick={() => onSelectSupplier(s.id)}>
                 {s.name}: {pct(s.onTimeRate)} on-time, dependency {s.dependencyScore}/5,{" "}
-                {formatCurrency(s.annualSpend)}, {s.riskTier}
+                {formatCurrency(s.spendValue)}, {s.riskTier}
               </button>
             </li>
           ))}
@@ -292,9 +292,7 @@ export default function RegisterView({
   const insufficientCount = derived.filter((s) => s.status === "insufficient").length;
   const invalidCount = derived.filter((s) => s.status === "invalid").length;
   const spend = (s) =>
-    typeof s.annualSpend === "number" && Number.isFinite(s.annualSpend) && s.annualSpend >= 0
-      ? s.annualSpend
-      : 0;
+    typeof s.spendValue === "number" && Number.isFinite(s.spendValue) ? s.spendValue : 0;
   const avgAdj = scored.length
     ? scored.reduce((a, s) => a + s.adjustedScore, 0) / scored.length
     : null;
@@ -309,6 +307,9 @@ export default function RegisterView({
     count: derived.filter((s) => s.riskTier === t).length,
   }));
   const watchlist = derived.filter(isCH).sort((a, b) => a.adjustedScore - b.adjustedScore);
+  const attentionRows = derived
+    .filter((s) => s.attention && s.attention.length && !isCH(s))
+    .slice(0, 8);
   const laggards = derived.filter((s) => s.belowPeerAvg).sort((a, b) => a.peerDelta - b.peerDelta);
 
   return (
@@ -461,6 +462,48 @@ export default function RegisterView({
               ))}
             </ul>
           )}
+        </section>
+
+        <section className="panel">
+          <div className="panel-head">
+            <h3>Needs attention</h3>
+            <span className="panel-hint">
+              Raw signals outside Critical/High, independent of final tier
+            </span>
+          </div>
+          {attentionRows.length === 0 ? (
+            <p className="empty-note">
+              No other supplier shows poor raw delivery or sole-source dependency.
+            </p>
+          ) : (
+            <ul className="watchlist" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {attentionRows.map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    className="watchlist-row"
+                    onClick={() => onSelectSupplier(s.id)}
+                    aria-label={`Open ${s.name}, ${s.riskTier}, ${s.attention.map((a) => a.label).join(", ")}`}
+                  >
+                    <span className="watchlist-name">
+                      <Building2 size={13} color={C.ink} aria-hidden="true" />
+                      <span>{s.name}</span>
+                      <span className="laggard-category">
+                        {s.attention.map((a) => a.label).join(" · ")}
+                      </span>
+                    </span>
+                    <span className="watchlist-score" style={{ color: C.brass }}>
+                      {s.riskTier.replace(" Risk", "")}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="note-line" style={{ marginTop: 8 }}>
+            Poor delivery = on-time rate below the active score-3 delivery minimum. Sole-source
+            dependency = sole-sourced at P1 to P3. Prompts follow-up; does not change the tier.
+          </p>
         </section>
 
         <section className="panel">

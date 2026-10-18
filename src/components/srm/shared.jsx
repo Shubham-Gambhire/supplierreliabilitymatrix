@@ -117,7 +117,7 @@ export function InfoTip({ text }) {
 }
 
 /** Accessible modal on Radix Dialog: focus trap, initial focus, focus restore, inert background, scroll lock. */
-export function Modal({ open, onClose, title, children }) {
+export function Modal({ open, onClose, title, children, returnFocusRef }) {
   const returnRef = React.useRef(null);
   if (open && !returnRef.current && typeof document !== "undefined")
     returnRef.current = document.activeElement;
@@ -134,8 +134,9 @@ export function Modal({ open, onClose, title, children }) {
             className="modal-panel ledger-dialog"
             aria-describedby={undefined}
             onCloseAutoFocus={(e) => {
-              const el = returnRef.current;
+              const fallback = returnRef.current;
               returnRef.current = null;
+              const el = returnFocusRef?.current || fallback;
               if (el && typeof el.focus === "function") {
                 e.preventDefault();
                 el.focus();
@@ -173,6 +174,7 @@ export function NumInput({
   min,
   max,
   className,
+  id,
 }) {
   const shown =
     value === "" ||
@@ -183,6 +185,7 @@ export function NumInput({
       : value;
   return (
     <input
+      id={id}
       type="number"
       inputMode="decimal"
       value={shown}

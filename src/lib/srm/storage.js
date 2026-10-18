@@ -37,6 +37,14 @@ function mergeConfig(cfg) {
  * Returns { ok, state?, warnings[], error? }.
  */
 export function normalizeState(obj) {
+  try {
+    return normalizeStateUnsafe(obj);
+  } catch (e) {
+    return { ok: false, warnings: [], error: `Saved data could not be normalized (${e && e.message ? e.message : "unknown error"}).` };
+  }
+}
+
+function normalizeStateUnsafe(obj) {
   const warnings = [];
   if (!isObj(obj)) return { ok: false, warnings, error: "Saved data is not an object." };
   if (typeof obj.version === "number" && obj.version > STORAGE_VERSION)
@@ -48,6 +56,8 @@ export function normalizeState(obj) {
   const customCols = [];
   const colIds = new Set(),
     colLabels = new Set();
+  // old raw column id -> new id; null = ambiguous (raw id reused by multiple columns)
+  const colIdMap = new Map();
   for (const c of Array.isArray(obj.customCols) ? obj.customCols : []) {
     if (!isObj(c) || typeof c.label !== "string" || !c.label.trim()) {
       warnings.push("Dropped a malformed custom column.");
@@ -59,6 +69,15 @@ export function normalizeState(obj) {
       continue;
     }
     let id = isValidId(c.id) && !colIds.has(c.id) ? c.id : newColumnId();
+    while (id !== c.id && colIds.has(id)) id = newColumnId();
+    if (id !== c.id && typeof c.id === "string" && c.id)
+      warnings.push(`Custom column "${label}" received a new ID; its values were carried over.`);
+    if (typeof c.id === "string" && c.id) {
+      if (colIdMap.has(c.id)) {
+        colIdMap.set(c.id, null);
+        warnings.push(`Custom column ID "${c.id}" was shared by several columns; those values were kept in the original record (_legacyCustom) for manual review.`);
+      } else colIdMap.set(c.id, id);
+    }
     colIds.add(id);
     colLabels.add(normLabel(label));
     customCols.push({ id, label, type: c.type === "number" ? "number" : "text" });
@@ -82,14 +101,20 @@ export function normalizeState(obj) {
       while (seen.has(id)) id = newSupplierId();
       repaired++;
     } else {
-      const h = Array.prototype.slice.call(rawHistory[id] || []);
-      if (Array.isArray(rawHistory[id])) history[id] = h.filter(isObj).slice(-HISTORY_LIMIT);
+      const rh = Object.prototype.hasOwnProperty.call(rawHistory, id) ? rawHistory[id] : undefined;
+      if (Array.isArray(rh)) history[id] = rh.filter(isObj).slice(-HISTORY_LIMIT);
+      else if (rh !== undefined) warnings.push(`Ignored malformed history for supplier ${id}.`);
     }
     seen.add(id);
     const custom = {};
+    const legacy = {};
     if (isObj(raw.custom))
-      for (const k of Object.keys(raw.custom))
-        if (colIds.has(k) && !RESERVED.has(k)) custom[k] = raw.custom[k];
+      for (const k of Object.keys(raw.custom)) {
+        if (RESERVED.has(k)) continue;
+        const mapped = colIdMap.has(k) ? colIdMap.get(k) : undefined;
+        if (mapped) custom[mapped] = raw.custom[k];
+        else if (mapped === null) legacy[k] = raw.custom[k];
+      }
     suppliers.push({
       ...raw,
       id,
@@ -97,6 +122,7 @@ export function normalizeState(obj) {
       location: typeof raw.location === "string" ? raw.location : "",
       category: typeof raw.category === "string" ? raw.category : "",
       custom,
+      ...(Object.keys(legacy).length ? { _legacyCustom: legacy } : {}),
     });
   }
   if (repaired)
@@ -117,6 +143,14 @@ export function normalizeState(obj) {
 
 /** Parses the raw localStorage string. status: empty | corrupt | ok */
 export function parseSaved(raw) {
+  try {
+    return parseSavedUnsafe(raw);
+  } catch (e) {
+    return { status: "corrupt", error: "Saved data could not be read." };
+  }
+}
+
+function parseSavedUnsafe(raw) {
   if (raw === null || raw === undefined) return { status: "empty" };
   let obj;
   try {
@@ -174,6 +208,14 @@ export function buildBackup(state) {
 }
 
 export function parseBackup(text) {
+  try {
+    return parseBackupUnsafe(text);
+  } catch {
+    return { ok: false, error: "This backup could not be read." };
+  }
+}
+
+function parseBackupUnsafe(text) {
   let obj;
   try {
     obj = JSON.parse(text);

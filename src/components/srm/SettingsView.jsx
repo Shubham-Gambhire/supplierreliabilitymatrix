@@ -87,6 +87,7 @@ export default function SettingsView({
       invalid={!!err(opts.errKey || path)}
       describedBy={err(opts.errKey || path) ? `${id}-err` : undefined}
       onChange={(x) => set(path, opts.toStore ? opts.toStore(x) : x)}
+      id={id}
       className={id}
     />
   );
@@ -329,7 +330,7 @@ export default function SettingsView({
         {draft.deliveryBuckets.map((b, i) => (
           <Row
             key={i}
-            id={`b${i}`}
+            id={i === 4 ? undefined : `b${i}`}
             label={
               i === 4 ? "Score 1 at on-time rate from (fixed)" : `Score ${5 - i} at on-time rate ≥`
             }

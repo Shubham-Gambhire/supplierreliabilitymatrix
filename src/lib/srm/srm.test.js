@@ -399,3 +399,33 @@ describe("snapshots", () => {
     expect(validateSupplier(sup()).ok).toBe(true);
   });
 });
+
+describe("review follow-ups", () => {
+  const sup = (o = {}) => ({ id: "T1", name: "Test", location: "", category: "", annualSpend: 100, totalPOs: 10, onTimeDeliveries: 9, priority: 3, singleSource: false, ...o });
+  it("malformed array-like history never throws", () => {
+    const r = parseSaved(JSON.stringify({ suppliers: [sup()], history: { T1: { length: 1e30 } }, config: cloneDefaultConfig() }));
+    expect(r.status).toBe("ok");
+    expect(r.state.history.T1).toBeUndefined();
+  });
+  it("custom column ID repair remaps values", () => {
+    const n = normalizeState({ suppliers: [sup({ custom: { "bad id": "Important value" } })], customCols: [{ id: "bad id", label: "Owner", type: "text" }], config: cloneDefaultConfig() });
+    const newId = n.state.customCols[0].id;
+    expect(newId).not.toBe("bad id");
+    expect(n.state.suppliers[0].custom[newId]).toBe("Important value");
+  });
+  it("legacy string spend is normalized for totals", () => {
+    const r = parseSaved(JSON.stringify({ suppliers: [sup({ annualSpend: "1200" })], config: cloneDefaultConfig() }));
+    const d = computeSupplier(r.state.suppliers[0], validateConfig(r.state.config).config);
+    expect(d.spendValue).toBe(1200);
+    expect(computeSupplier(sup({ annualSpend: "" }), validateConfig(cloneDefaultConfig()).config).spendValue).toBeNull();
+  });
+  it("poor raw delivery is flagged even when tier is Medium", () => {
+    const d = computeSupplier(sup({ priority: 5, onTimeDeliveries: 0 }), validateConfig(cloneDefaultConfig()).config);
+    expect(d.riskTier).toBe("Medium Risk");
+    expect(d.attention.map((a) => a.code)).toContain("poor-delivery");
+  });
+  it("thin-data sole source is flagged", () => {
+    const d = computeSupplier(sup({ totalPOs: 1, onTimeDeliveries: 1, singleSource: true, priority: 1 }), validateConfig(cloneDefaultConfig()).config);
+    expect(d.attention.map((a) => a.code)).toEqual(expect.arrayContaining(["thin-data-sole-source", "structural-dependency"]));
+  });
+});
