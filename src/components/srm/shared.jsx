@@ -79,11 +79,14 @@ export function InfoTip({ text }) {
 
 /** Accessible modal on Radix Dialog: focus trap, initial focus, focus restore, inert background, scroll lock. */
 export function Modal({ open, onClose, title, children }) {
+  const returnRef = React.useRef(null);
+  if (open && !returnRef.current && typeof document !== "undefined") returnRef.current = document.activeElement;
   return (
     <Dialog.Root open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
       <Dialog.Portal>
         <Dialog.Overlay className="modal-backdrop">
-          <Dialog.Content className="modal-panel ledger-dialog" aria-describedby={undefined}>
+          <Dialog.Content className="modal-panel ledger-dialog" aria-describedby={undefined}
+            onCloseAutoFocus={(e) => { const el = returnRef.current; returnRef.current = null; if (el && typeof el.focus === "function") { e.preventDefault(); el.focus(); } }}>
             <div className="modal-head">
               <Dialog.Title asChild><h2>{title}</h2></Dialog.Title>
               <Dialog.Close className="modal-close" aria-label="Close"><X size={16} /></Dialog.Close>
