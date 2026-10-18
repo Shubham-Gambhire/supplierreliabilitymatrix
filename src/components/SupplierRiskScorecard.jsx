@@ -8,8 +8,8 @@ import LedgerView from "./srm/LedgerView.jsx";
 import SettingsView, { saveStatusLabel } from "./srm/SettingsView.jsx";
 import MethodologyView from "./srm/MethodologyView.jsx";
 import { cloneDefaultConfig, validateConfig, deriveAll, configFingerprint } from "@/lib/srm/scoring.js";
-import { recordSnapshot as recordSnap, HISTORY_LIMIT } from "@/lib/srm/history.js";
-import { STORAGE_KEY, parseSaved, serializeState, readWriteToken, buildBackup } from "@/lib/srm/storage.js";
+import { recordSnapshot as recordSnap } from "@/lib/srm/history.js";
+import { STORAGE_KEY, parseSaved, serializeState, readWriteToken } from "@/lib/srm/storage.js";
 import { newSupplierId } from "@/lib/srm/ids.js";
 import { cloneSeeds } from "@/lib/srm/seed.js";
 
@@ -243,4 +243,3 @@ export default function App() {
   );
 }
 
-export { HISTORY_LIMIT, buildBackup };
