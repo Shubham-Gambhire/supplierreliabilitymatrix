@@ -239,6 +239,12 @@ export function computeSupplier(s, config) {
     multiplier: null,
     adjustedScore: null,
     riskTier: null,
+    // Validated numeric values (null when that field is invalid; blanks are never coerced to 0).
+    spendValue: v.errors.annualSpend ? null : v.values.spend,
+    totalValue: v.errors.totalPOs ? null : v.values.total,
+    onTimeValue: v.errors.onTimeDeliveries ? null : v.values.onTime,
+    priorityValue: v.errors.priority ? null : v.values.priority,
+    attention: [],
   };
   if (!v.ok) {
     // Dependency is still meaningful if its own inputs are valid, but an invalid row never gets a tier.
@@ -246,20 +252,24 @@ export function computeSupplier(s, config) {
       base.dependencyScore = computeDependencyScore(s.singleSource, v.values.priority);
     if (!v.errors.totalPOs && !v.errors.onTimeDeliveries && v.values.total > 0)
       base.onTimeRate = v.values.onTime / v.values.total;
-    return { ...base, status: "invalid", riskTier: "Invalid Data" };
+    const out = { ...base, status: "invalid", riskTier: "Invalid Data" };
+    out.attention = computeAttention(out, s, config);
+    return out;
   }
   const { total, onTime, priority } = v.values;
   const dependencyScore = computeDependencyScore(s.singleSource, priority);
   const onTimeRate = total > 0 ? onTime / total : null;
   const minPOs = Math.max(1, config.minPOs | 0);
   if (total === 0 || total < minPOs) {
-    return {
+    const out = {
       ...base,
       dependencyScore,
       onTimeRate,
       status: "insufficient",
       riskTier: "Insufficient Data",
     };
+    out.attention = computeAttention(out, s, config);
+    return out;
   }
   const deliveryScore = computeDeliveryScore(onTimeRate, config.deliveryBuckets);
   const penalty =
@@ -273,7 +283,7 @@ export function computeSupplier(s, config) {
   );
   const multiplier = config.multipliers[priority];
   const adjustedScore = clamp(performanceScore / multiplier, SCORE_MIN, SCORE_MAX);
-  return {
+  const out = {
     ...base,
     dependencyScore,
     onTimeRate,
@@ -284,6 +294,40 @@ export function computeSupplier(s, config) {
     adjustedScore,
     riskTier: computeRiskTier(adjustedScore, config.thresholds),
   };
+  out.attention = computeAttention(out, s, config);
+  return out;
+}
+
+/**
+ * Attention signals independent of the final tier, so a weighted tier cannot mask
+ * raw poor delivery or structural dependency. Uses only active thresholds; this is a
+ * follow-up prompt, not a probability.
+ *  - poor-delivery: scored row whose on-time rate is below the active score-3 bucket minimum.
+ *  - structural-dependency: sole-sourced row whose dependency score is 1 or 2 (P1 to P3).
+ *  - thin-data-sole-source: sole-sourced row with too few POs to score.
+ */
+export function computeAttention(d, s, config) {
+  const out = [];
+  const b3 = config?.deliveryBuckets?.find((b) => b.score === 3);
+  if (d.status === "scored" && b3 && d.onTimeRate !== null && d.onTimeRate < b3.min)
+    out.push({
+      code: "poor-delivery",
+      label: "Poor delivery",
+      reason: `On-time rate is below the ${Math.round(b3.min * 100)}% minimum for a delivery score of 3, regardless of final tier.`,
+    });
+  if (s?.singleSource === true && d.dependencyScore !== null && d.dependencyScore <= 2)
+    out.push({
+      code: "structural-dependency",
+      label: "Sole-source dependency",
+      reason: "Sole-sourced at priority P1 to P3, so there is no ready alternative for a critical item.",
+    });
+  if (d.status === "insufficient" && s?.singleSource === true)
+    out.push({
+      code: "thin-data-sole-source",
+      label: "Sole source, thin data",
+      reason: "Sole-sourced but has too few POs to score; gather delivery history.",
+    });
+  return out;
 }
 
 /* ---------------- peer comparison (leave-one-out) ---------------- */
