@@ -359,9 +359,18 @@ export function SupplierDetail({ s, config, entries, fingerprint }) {
     <div className="detail-chain">
       <div className="detail-left">
         <p className="detail-meta">
-          {s.category || "Uncategorized"} &middot; {formatCurrency(s.annualSpend)} annual spend
+          {s.category || "Uncategorized"} &middot; {formatCurrency(s.spendValue)} annual spend
           (USD) &middot; P{s.priority || "?"}
         </p>
+        {s.attention && s.attention.length > 0 && (
+          <ul className="doc-list" aria-label="Attention signals">
+            {s.attention.map((a) => (
+              <li key={a.code}>
+                <strong style={{ color: C.brass }}>{a.label}:</strong> {a.reason}
+              </li>
+            ))}
+          </ul>
+        )}
         {s.status === "invalid" ? (
           <div className="detail-text">
             <strong style={{ color: C.critical }}>Invalid data, not scored.</strong>
