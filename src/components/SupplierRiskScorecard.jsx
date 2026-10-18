@@ -52,6 +52,7 @@ export default function App() {
   const [conflict, setConflict] = useState(false);
   const [announcement, setAnnouncement] = useState({ msg: "", n: 0 });
   const tokenRef = useRef(null);
+  const methodologyBtnRef = useRef(null);
   const timerRef = useRef(null);
   const stateRef = useRef(null);
   stateRef.current = { suppliers, config, history, customCols };
@@ -365,6 +366,7 @@ export default function App() {
         <button
           type="button"
           className="methodology-trigger"
+          ref={methodologyBtnRef}
           onClick={() => setShowMethodology(true)}
         >
           <BookOpen size={13} /> How this is scored
@@ -438,6 +440,7 @@ export default function App() {
       <Modal
         open={showMethodology}
         onClose={() => setShowMethodology(false)}
+        returnFocusRef={methodologyBtnRef}
         title="How this is scored"
       >
         <MethodologyView config={config} />

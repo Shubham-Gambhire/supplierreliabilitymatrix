@@ -466,6 +466,48 @@ export default function RegisterView({
 
         <section className="panel">
           <div className="panel-head">
+            <h3>Needs attention</h3>
+            <span className="panel-hint">
+              Raw signals outside Critical/High, independent of final tier
+            </span>
+          </div>
+          {attentionRows.length === 0 ? (
+            <p className="empty-note">
+              No other supplier shows poor raw delivery or sole-source dependency.
+            </p>
+          ) : (
+            <ul className="watchlist" style={{ listStyle: "none", padding: 0, margin: 0 }}>
+              {attentionRows.map((s) => (
+                <li key={s.id}>
+                  <button
+                    type="button"
+                    className="watchlist-row"
+                    onClick={() => onSelectSupplier(s.id)}
+                    aria-label={`Open ${s.name}, ${s.riskTier}, ${s.attention.map((a) => a.label).join(", ")}`}
+                  >
+                    <span className="watchlist-name">
+                      <Building2 size={13} color={C.ink} aria-hidden="true" />
+                      <span>{s.name}</span>
+                      <span className="laggard-category">
+                        {s.attention.map((a) => a.label).join(" · ")}
+                      </span>
+                    </span>
+                    <span className="watchlist-score" style={{ color: C.brass }}>
+                      {s.riskTier.replace(" Risk", "")}
+                    </span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+          <p className="note-line" style={{ marginTop: 8 }}>
+            Poor delivery = on-time rate below the active score-3 delivery minimum. Sole-source
+            dependency = sole-sourced at P1 to P3. Prompts follow-up; does not change the tier.
+          </p>
+        </section>
+
+        <section className="panel">
+          <div className="panel-head">
             <h3>Category laggards</h3>
             <span className="panel-hint">
               Descriptive: below other scored peers in the same category
