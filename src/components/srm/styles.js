@@ -260,4 +260,31 @@ export const APP_CSS = `
           .ref-table { font-size: 12px; }
           .undo-toast { left: 12px; right: 12px; bottom: 12px; }
         }
+        .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+        .notice { border: 1px solid ${C.paperLineStrong}; background: ${C.surfaceAlt}; border-radius: 4px; padding: 10px 12px; font-size: 12.5px; line-height: 1.55; display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap; }
+        .notice-warn { border-color: ${C.high}; background: ${C.highDim}; }
+        .notice-error { border-color: ${C.critical}; background: ${C.criticalDim}; }
+        .notice .notice-actions { display: flex; gap: 8px; flex-wrap: wrap; margin-left: auto; }
+        .notice-stack { max-width: 1080px; margin: 10px auto 0; padding: 0 24px; display: flex; flex-direction: column; gap: 8px; }
+        .demo-note { font-size: 11.5px; font-family: ${F_DATA}; margin: -6px 0 12px; opacity: 0.85; }
+        .row-error { color: ${C.critical}; font-size: 10.5px; line-height: 1.4; margin-top: 2px; white-space: normal; max-width: 220px; }
+        .field-invalid, .cell-input.field-invalid, .cell-select.field-invalid { border-color: ${C.critical} !important; background: ${C.criticalDim}; }
+        .sort-btn { all: unset; cursor: pointer; display: inline-flex; align-items: center; gap: 4px; text-transform: inherit; letter-spacing: inherit; font: inherit; }
+        .sort-btn:focus-visible { outline: 2px solid ${C.navy}; outline-offset: 2px; }
+        .watchlist-row { width: 100%; background: transparent; border-left: none; border-right: none; border-bottom: none; text-align: left; color: ${C.ink}; font: inherit; }
+        .matrix-list { margin-top: 10px; font-size: 12px; }
+        .matrix-list summary { cursor: pointer; font-weight: 600; font-size: 12px; }
+        .matrix-list ul { list-style: none; padding: 0; margin: 6px 0 0; display: flex; flex-direction: column; gap: 2px; }
+        .link-btn { background: none; border: none; padding: 3px 0; color: ${C.navy}; text-decoration: underline; cursor: pointer; font-size: 12px; text-align: left; }
+        .matrix-explain { font-size: 12px; line-height: 1.55; margin: 8px 0 0; }
+        .import-preview { border: 1px solid ${C.navy}; border-radius: 4px; padding: 14px 16px; background: ${C.surfaceAlt}; font-size: 12.5px; }
+        .import-preview h3 { margin: 0 0 8px; font-size: 15px; }
+        .import-preview ul { margin: 6px 0; padding-left: 18px; max-height: 220px; overflow-y: auto; }
+        .import-actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 10px; }
+        .field-error { color: ${C.critical}; font-size: 11.5px; margin: 2px 0 4px; }
+        .settings-actions { position: sticky; bottom: 0; z-index: 5; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; padding: 10px 12px; border: 1px solid ${C.navy}; border-radius: 4px; background: ${C.surface}; }
+        .btn-primary:disabled, .btn-outline:disabled { opacity: 0.5; cursor: not-allowed; }
+        .loading-note { padding: 40px 0; text-align: center; font-size: 13px; }
+        .history-note { font-size: 11px; font-style: italic; }
+
 `;
