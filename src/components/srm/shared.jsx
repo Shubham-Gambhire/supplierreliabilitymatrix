@@ -174,6 +174,7 @@ export function NumInput({
   min,
   max,
   className,
+  id,
 }) {
   const shown =
     value === "" ||
@@ -184,6 +185,7 @@ export function NumInput({
       : value;
   return (
     <input
+      id={id}
       type="number"
       inputMode="decimal"
       value={shown}

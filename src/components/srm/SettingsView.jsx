@@ -87,6 +87,7 @@ export default function SettingsView({
       invalid={!!err(opts.errKey || path)}
       describedBy={err(opts.errKey || path) ? `${id}-err` : undefined}
       onChange={(x) => set(path, opts.toStore ? opts.toStore(x) : x)}
+      id={id}
       className={id}
     />
   );
