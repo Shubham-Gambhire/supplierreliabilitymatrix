@@ -34,7 +34,12 @@ export const clamp = (n, lo, hi) => Math.min(hi, Math.max(lo, n));
 /** Strict numeric reader: numbers pass through, non-blank numeric strings parse, everything else is NaN. */
 export function toNumber(v) {
   if (typeof v === "number") return v;
-  if (typeof v === "string" && v.trim() !== "" && /^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(v.trim())) return Number(v.trim());
+  if (
+    typeof v === "string" &&
+    v.trim() !== "" &&
+    /^[-+]?(\d+\.?\d*|\.\d+)(e[-+]?\d+)?$/i.test(v.trim())
+  )
+    return Number(v.trim());
   return NaN;
 }
 
@@ -54,7 +59,11 @@ export function validateConfig(draft) {
   const out = {
     weights: { delivery: num(d.weights?.delivery), dependency: num(d.weights?.dependency) },
     multipliers: {},
-    thresholds: { low: num(d.thresholds?.low), medium: num(d.thresholds?.medium), high: num(d.thresholds?.high) },
+    thresholds: {
+      low: num(d.thresholds?.low),
+      medium: num(d.thresholds?.medium),
+      high: num(d.thresholds?.high),
+    },
     minPOs: num(d.minPOs),
     compoundingWeight: num(d.compoundingWeight),
     peerGapThreshold: num(d.peerGapThreshold),
@@ -63,28 +72,40 @@ export function validateConfig(draft) {
 
   for (const k of ["delivery", "dependency"]) {
     const w = out.weights[k];
-    if (!Number.isFinite(w) || w < 0 || w > 1) errors[`weights.${k}`] = "Enter a number from 0 to 1.";
+    if (!Number.isFinite(w) || w < 0 || w > 1)
+      errors[`weights.${k}`] = "Enter a number from 0 to 1.";
   }
   if (!errors["weights.delivery"] && !errors["weights.dependency"]) {
     const sum = out.weights.delivery + out.weights.dependency;
-    if (Math.abs(sum - 1) > 1e-6) errors.weights = `Weights must sum to 1 (currently ${+sum.toFixed(4)}).`;
+    if (Math.abs(sum - 1) > 1e-6)
+      errors.weights = `Weights must sum to 1 (currently ${+sum.toFixed(4)}).`;
   }
 
   let prev = Infinity;
   for (const p of PRIORITIES) {
     const m = num(d.multipliers?.[p]);
     out.multipliers[p] = m;
-    if (!Number.isFinite(m) || m <= 0 || m > 10) { errors[`multipliers.${p}`] = "Enter a positive number up to 10."; prev = NaN; continue; }
-    if (Number.isFinite(prev) && m > prev) errors[`multipliers.${p}`] = `Must be no larger than P${p - 1} (more critical tiers need equal or larger multipliers).`;
+    if (!Number.isFinite(m) || m <= 0 || m > 10) {
+      errors[`multipliers.${p}`] = "Enter a positive number up to 10.";
+      prev = NaN;
+      continue;
+    }
+    if (Number.isFinite(prev) && m > prev)
+      errors[`multipliers.${p}`] =
+        `Must be no larger than P${p - 1} (more critical tiers need equal or larger multipliers).`;
     prev = m;
   }
 
   const { low, medium, high } = out.thresholds;
-  if (!Number.isFinite(low) || low <= 0 || low > SCORE_MAX) errors["thresholds.low"] = "Enter a number above 0 and at most 5.";
+  if (!Number.isFinite(low) || low <= 0 || low > SCORE_MAX)
+    errors["thresholds.low"] = "Enter a number above 0 and at most 5.";
   if (!Number.isFinite(medium)) errors["thresholds.medium"] = "Enter a number.";
-  if (!Number.isFinite(high) || high < 0) errors["thresholds.high"] = "Enter a number of 0 or more.";
-  if (!errors["thresholds.low"] && !errors["thresholds.medium"] && !(low > medium)) errors["thresholds.medium"] = "Must be below the Low threshold.";
-  if (!errors["thresholds.medium"] && !errors["thresholds.high"] && !(medium > high)) errors["thresholds.high"] = "Must be below the Medium threshold.";
+  if (!Number.isFinite(high) || high < 0)
+    errors["thresholds.high"] = "Enter a number of 0 or more.";
+  if (!errors["thresholds.low"] && !errors["thresholds.medium"] && !(low > medium))
+    errors["thresholds.medium"] = "Must be below the Low threshold.";
+  if (!errors["thresholds.medium"] && !errors["thresholds.high"] && !(medium > high))
+    errors["thresholds.high"] = "Must be below the Medium threshold.";
 
   const buckets = Array.isArray(d.deliveryBuckets) ? d.deliveryBuckets : [];
   if (buckets.length !== 5) errors.deliveryBuckets = "Exactly five delivery buckets are required.";
@@ -95,17 +116,44 @@ export function validateConfig(draft) {
     let min = num(raw?.min);
     if (i === 4) min = 0; // final bucket is fixed at 0
     out.deliveryBuckets.push({ min, score });
-    if (raw && raw.score !== undefined && toNumber(raw.score) !== score) errors.deliveryBuckets = "Bucket scores are fixed at 5, 4, 3, 2, 1.";
-    if (i === 4) { if (raw && toNumber(raw.min) !== 0 && raw.min !== undefined) errors[`deliveryBuckets.4`] = "The lowest bucket always starts at 0%."; continue; }
-    if (!Number.isFinite(min) || min < 0 || min > 1) { errors[`deliveryBuckets.${i}`] = "Enter a percentage from 0 to 100."; prevMin = NaN; continue; }
-    if (Number.isFinite(prevMin) && !(min < prevMin)) errors[`deliveryBuckets.${i}`] = `Must be below the score ${score + 1} minimum.`;
-    else if (!(min > 0)) errors[`deliveryBuckets.${i}`] = "Must be above 0% (only score 1 starts at 0%).";
+    if (raw && raw.score !== undefined && toNumber(raw.score) !== score)
+      errors.deliveryBuckets = "Bucket scores are fixed at 5, 4, 3, 2, 1.";
+    if (i === 4) {
+      if (raw && toNumber(raw.min) !== 0 && raw.min !== undefined)
+        errors[`deliveryBuckets.4`] = "The lowest bucket always starts at 0%.";
+      continue;
+    }
+    if (!Number.isFinite(min) || min < 0 || min > 1) {
+      errors[`deliveryBuckets.${i}`] = "Enter a percentage from 0 to 100.";
+      prevMin = NaN;
+      continue;
+    }
+    if (Number.isFinite(prevMin) && !(min < prevMin))
+      errors[`deliveryBuckets.${i}`] = `Must be below the score ${score + 1} minimum.`;
+    else if (!(min > 0))
+      errors[`deliveryBuckets.${i}`] = "Must be above 0% (only score 1 starts at 0%).";
     prevMin = min;
   }
 
-  if (!Number.isFinite(out.minPOs) || !Number.isInteger(out.minPOs) || out.minPOs < 1 || out.minPOs > 1000) errors.minPOs = "Enter a whole number from 1 to 1000.";
-  if (!Number.isFinite(out.compoundingWeight) || out.compoundingWeight < 0 || out.compoundingWeight > 1) errors.compoundingWeight = "Enter a number from 0 to 1.";
-  if (!Number.isFinite(out.peerGapThreshold) || out.peerGapThreshold < 0 || out.peerGapThreshold > 5) errors.peerGapThreshold = "Enter a number from 0 to 5.";
+  if (
+    !Number.isFinite(out.minPOs) ||
+    !Number.isInteger(out.minPOs) ||
+    out.minPOs < 1 ||
+    out.minPOs > 1000
+  )
+    errors.minPOs = "Enter a whole number from 1 to 1000.";
+  if (
+    !Number.isFinite(out.compoundingWeight) ||
+    out.compoundingWeight < 0 ||
+    out.compoundingWeight > 1
+  )
+    errors.compoundingWeight = "Enter a number from 0 to 1.";
+  if (
+    !Number.isFinite(out.peerGapThreshold) ||
+    out.peerGapThreshold < 0 ||
+    out.peerGapThreshold > 5
+  )
+    errors.peerGapThreshold = "Enter a number from 0 to 5.";
 
   return { ok: Object.keys(errors).length === 0, errors, config: out };
 }
@@ -113,7 +161,9 @@ export function validateConfig(draft) {
 /** Human labels derived from the ACTIVE bucket minima. */
 export function deliveryBucketLabels(buckets) {
   const pct = (m) => `${+(m * 100).toFixed(2)}%`;
-  return buckets.map((b, i) => (i === 0 ? `\u2265 ${pct(b.min)}` : `${pct(b.min)} to < ${pct(buckets[i - 1].min)}`));
+  return buckets.map((b, i) =>
+    i === 0 ? `\u2265 ${pct(b.min)}` : `${pct(b.min)} to < ${pct(buckets[i - 1].min)}`,
+  );
 }
 
 /** Explicit, non-overlapping tier ranges for display. */
@@ -137,12 +187,20 @@ export function validateSupplier(s) {
   const priority = toNumber(s?.priority);
   const spend = toNumber(s?.annualSpend);
   if (!isNonNegInt(total)) errors.totalPOs = "Total POs must be a whole number of 0 or more.";
-  if (!isNonNegInt(onTime)) errors.onTimeDeliveries = "On-time deliveries must be a whole number of 0 or more.";
-  else if (!errors.totalPOs && onTime > total) errors.onTimeDeliveries = `On-time deliveries (${onTime}) cannot exceed Total POs (${total}).`;
-  if (!(Number.isInteger(priority) && priority >= 1 && priority <= 5)) errors.priority = "Priority must be P1 to P5.";
-  if (!(Number.isFinite(spend) && spend >= 0)) errors.annualSpend = "Annual spend must be a number of 0 or more.";
+  if (!isNonNegInt(onTime))
+    errors.onTimeDeliveries = "On-time deliveries must be a whole number of 0 or more.";
+  else if (!errors.totalPOs && onTime > total)
+    errors.onTimeDeliveries = `On-time deliveries (${onTime}) cannot exceed Total POs (${total}).`;
+  if (!(Number.isInteger(priority) && priority >= 1 && priority <= 5))
+    errors.priority = "Priority must be P1 to P5.";
+  if (!(Number.isFinite(spend) && spend >= 0))
+    errors.annualSpend = "Annual spend must be a number of 0 or more.";
   if (typeof s?.singleSource !== "boolean") errors.singleSource = "Sole source must be Yes or No.";
-  return { ok: Object.keys(errors).length === 0, errors, values: { total, onTime, priority, spend } };
+  return {
+    ok: Object.keys(errors).length === 0,
+    errors,
+    values: { total, onTime, priority, spend },
+  };
 }
 
 /* ---------------- scoring ---------------- */
@@ -184,8 +242,10 @@ export function computeSupplier(s, config) {
   };
   if (!v.ok) {
     // Dependency is still meaningful if its own inputs are valid, but an invalid row never gets a tier.
-    if (!v.errors.priority && !v.errors.singleSource) base.dependencyScore = computeDependencyScore(s.singleSource, v.values.priority);
-    if (!v.errors.totalPOs && !v.errors.onTimeDeliveries && v.values.total > 0) base.onTimeRate = v.values.onTime / v.values.total;
+    if (!v.errors.priority && !v.errors.singleSource)
+      base.dependencyScore = computeDependencyScore(s.singleSource, v.values.priority);
+    if (!v.errors.totalPOs && !v.errors.onTimeDeliveries && v.values.total > 0)
+      base.onTimeRate = v.values.onTime / v.values.total;
     return { ...base, status: "invalid", riskTier: "Invalid Data" };
   }
   const { total, onTime, priority } = v.values;
@@ -193,16 +253,35 @@ export function computeSupplier(s, config) {
   const onTimeRate = total > 0 ? onTime / total : null;
   const minPOs = Math.max(1, config.minPOs | 0);
   if (total === 0 || total < minPOs) {
-    return { ...base, dependencyScore, onTimeRate, status: "insufficient", riskTier: "Insufficient Data" };
+    return {
+      ...base,
+      dependencyScore,
+      onTimeRate,
+      status: "insufficient",
+      riskTier: "Insufficient Data",
+    };
   }
   const deliveryScore = computeDeliveryScore(onTimeRate, config.deliveryBuckets);
-  const penalty = config.compoundingWeight * Math.max(0, SCORE_MIDPOINT - deliveryScore) * Math.max(0, SCORE_MIDPOINT - dependencyScore);
-  const performanceScore = clamp(config.weights.delivery * deliveryScore + config.weights.dependency * dependencyScore - penalty, SCORE_MIN, SCORE_MAX);
+  const penalty =
+    config.compoundingWeight *
+    Math.max(0, SCORE_MIDPOINT - deliveryScore) *
+    Math.max(0, SCORE_MIDPOINT - dependencyScore);
+  const performanceScore = clamp(
+    config.weights.delivery * deliveryScore + config.weights.dependency * dependencyScore - penalty,
+    SCORE_MIN,
+    SCORE_MAX,
+  );
   const multiplier = config.multipliers[priority];
   const adjustedScore = clamp(performanceScore / multiplier, SCORE_MIN, SCORE_MAX);
   return {
     ...base,
-    dependencyScore, onTimeRate, deliveryScore, compoundingPenalty: penalty, performanceScore, multiplier, adjustedScore,
+    dependencyScore,
+    onTimeRate,
+    deliveryScore,
+    compoundingPenalty: penalty,
+    performanceScore,
+    multiplier,
+    adjustedScore,
     riskTier: computeRiskTier(adjustedScore, config.thresholds),
   };
 }
@@ -223,7 +302,15 @@ export function attachPeerComparison(derived, gap) {
     groups.get(k).push(s);
   }
   return derived.map((s) => {
-    const empty = { ...s, categoryPeerAvg: null, categoryPeerCount: 0, peerDelta: null, peerDeltaPct: null, belowPeerAvg: false, peerMixedPriorities: false };
+    const empty = {
+      ...s,
+      categoryPeerAvg: null,
+      categoryPeerCount: 0,
+      peerDelta: null,
+      peerDeltaPct: null,
+      belowPeerAvg: false,
+      peerMixedPriorities: false,
+    };
     if (s.status !== "scored") return empty;
     const others = (groups.get(categoryKey(s.category)) || []).filter((o) => o !== s);
     if (others.length === 0) return empty;
@@ -243,22 +330,33 @@ export function attachPeerComparison(derived, gap) {
 }
 
 export function deriveAll(suppliers, config) {
-  return attachPeerComparison(suppliers.map((s) => computeSupplier(s, config)), config.peerGapThreshold);
+  return attachPeerComparison(
+    suppliers.map((s) => computeSupplier(s, config)),
+    config.peerGapThreshold,
+  );
 }
 
 /* ---------------- fingerprint ---------------- */
 
 function stableStringify(v) {
   if (Array.isArray(v)) return `[${v.map(stableStringify).join(",")}]`;
-  if (v && typeof v === "object") return `{${Object.keys(v).sort().map((k) => `${JSON.stringify(k)}:${stableStringify(v[k])}`).join(",")}}`;
+  if (v && typeof v === "object")
+    return `{${Object.keys(v)
+      .sort()
+      .map((k) => `${JSON.stringify(k)}:${stableStringify(v[k])}`)
+      .join(",")}}`;
   return JSON.stringify(v);
 }
 
 export function configFingerprint(config) {
   const str = `${MODEL_VERSION}|${stableStringify(config)}`;
   let h = 0x811c9dc5;
-  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 0x01000193); }
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
   return `m${MODEL_VERSION}-${(h >>> 0).toString(16).padStart(8, "0")}`;
 }
 
-export const fmtScore = (n) => (n === null || n === undefined || !Number.isFinite(n) ? "N/A" : n.toFixed(2));
+export const fmtScore = (n) =>
+  n === null || n === undefined || !Number.isFinite(n) ? "N/A" : n.toFixed(2);
