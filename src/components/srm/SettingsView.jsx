@@ -330,14 +330,14 @@ export default function SettingsView({
         {draft.deliveryBuckets.map((b, i) => (
           <Row
             key={i}
-            id={`b${i}`}
+            id={i === 4 ? undefined : `b${i}`}
             label={
               i === 4 ? "Score 1 at on-time rate from (fixed)" : `Score ${5 - i} at on-time rate ≥`
             }
             error={err(`deliveryBuckets.${i}`)}
           >
             {i === 4 ? (
-              <span className="unit" id="b4">0%</span>
+              <span className="unit">0%</span>
             ) : (
               <>
                 {num(
