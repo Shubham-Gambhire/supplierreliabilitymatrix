@@ -1,0 +1,21 @@
+// Fictional demo suppliers. Names, locations and industries are invented.
+export const CATEGORY_OPTIONS = [
+  "Components", "Industrial Supply", "Textiles", "Packaging",
+  "Office Systems", "Logistics", "Automation", "Fasteners",
+  "Raw Materials", "Services",
+];
+
+export const SEED_SUPPLIERS = [
+  { id: "SUP-001", name: "Bramfield Components Inc.", location: "Charlotte, NC, USA", category: "Components", annualSpend: 850000, onTimeDeliveries: 25, totalPOs: 43, priority: 5, singleSource: false },
+  { id: "SUP-002", name: "Corven Industrial Supply", location: "Columbus, OH, USA", category: "Industrial Supply", annualSpend: 210000, onTimeDeliveries: 3, totalPOs: 14, priority: 3, singleSource: true },
+  { id: "SUP-003", name: "Halden Textiles Co.", location: "Greensboro, NC, USA", category: "Textiles", annualSpend: 45000, onTimeDeliveries: 1, totalPOs: 2, priority: 1, singleSource: true },
+  { id: "SUP-004", name: "Ashworth Print & Packaging", location: "Denver, CO, USA", category: "Packaging", annualSpend: 18000, onTimeDeliveries: 0, totalPOs: 1, priority: 5, singleSource: false },
+  { id: "SUP-005", name: "Trentmoor Office Systems", location: "Kansas City, MO, USA", category: "Office Systems", annualSpend: 62000, onTimeDeliveries: 3, totalPOs: 4, priority: 3, singleSource: false },
+  { id: "SUP-006", name: "Larkspur Logistics Partners", location: "Memphis, TN, USA", category: "Logistics", annualSpend: 390000, onTimeDeliveries: 3, totalPOs: 8, priority: 5, singleSource: false },
+  { id: "SUP-007", name: "Voss Industrial GmbH", location: "Stuttgart, Germany", category: "Components", annualSpend: 1150000, onTimeDeliveries: 10, totalPOs: 24, priority: 5, singleSource: false },
+  { id: "SUP-008", name: "Alderney Precision Works Ltd.", location: "Sheffield, United Kingdom", category: "Components", annualSpend: 920000, onTimeDeliveries: 21, totalPOs: 38, priority: 3, singleSource: false },
+  { id: "SUP-009", name: "Kestrel Automation AB", location: "Gothenburg, Sweden", category: "Automation", annualSpend: 34000, onTimeDeliveries: 0, totalPOs: 1, priority: 5, singleSource: true },
+  { id: "SUP-010", name: "Meridian Fasteners S.A.", location: "Lyon, France", category: "Fasteners", annualSpend: 27000, onTimeDeliveries: 0, totalPOs: 1, priority: 5, singleSource: false },
+];
+
+export const cloneSeeds = () => SEED_SUPPLIERS.map((s) => ({ ...s, custom: {} }));
