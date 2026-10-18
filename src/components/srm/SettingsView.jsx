@@ -337,7 +337,7 @@ export default function SettingsView({
             error={err(`deliveryBuckets.${i}`)}
           >
             {i === 4 ? (
-              <span className="unit">0%</span>
+              <span className="unit" id="b4">0%</span>
             ) : (
               <>
                 {num(
