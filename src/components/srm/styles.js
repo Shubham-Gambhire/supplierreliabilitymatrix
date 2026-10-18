@@ -287,4 +287,8 @@ export const APP_CSS = `
         .loading-note { padding: 40px 0; text-align: center; font-size: 13px; }
         .history-note { font-size: 11px; font-style: italic; }
 
+        .ledger-dialog, .ledger-dialog * { box-sizing: border-box; font-family: ${F_BODY}; color: ${C.ink}; }
+        .ledger-dialog *:focus-visible { outline: 2px solid ${C.navy}; outline-offset: 2px; }
+        .tabbar [role=tablist] { flex-shrink: 0; }
+
 `;
