@@ -33,3 +33,13 @@ Scope: browser-only app, no backend. Design, demo suppliers, author credit, repo
 - Screen-reader behaviour was checked structurally (roles, names, focus), not with a real screen reader.
 - The historical PDF is unchanged except for the in-app historical notice.
 - JS engine modules are covered by tests, not by TypeScript.
+
+
+## Follow-up review fixes (second audit pass)
+
+- Storage: history is only sliced when it is a real array (`{length:1e30}` no longer throws); `parseSaved`/`parseBackup`/`normalizeState` convert any unexpected error into a recovery result.
+- Custom column ID repair keeps an old-ID to new-ID map and remaps each supplier's values; ambiguous shared legacy IDs keep raw values in `_legacyCustom` with a warning instead of dropping them.
+- Derived rows expose validated numeric values (`spendValue`, `totalValue`, `onTimeValue`, `priorityValue`; null when invalid, blanks never become 0). KPIs, matrix and details use them, so legacy string spend such as "1200" displays and totals correctly.
+- Total POs definition: eligible completed/due orders within one consistent reporting period, excluding future, not-yet-due and cancelled orders. Limitation: no period/freshness data exists, so this cannot be enforced.
+- Needs attention signals, independent of tier: poor delivery (rate below active score-3 minimum), sole-source dependency (P1 to P3), sole source with thin data. Example: non-sole P5 with 0/10 on time stays Medium by formula but is flagged Poor delivery.
+- Methodology modal explicitly restores focus to the "How this is scored" button on close.

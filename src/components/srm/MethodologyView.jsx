@@ -81,6 +81,18 @@ export default function MethodologyView({ config }) {
       <section className="panel">
         <h3>Step 1. Delivery Score</h3>
         <p>On-Time Rate = On-Time Deliveries ÷ Total POs, bucketed using the active minima:</p>
+        <p>
+          Total POs should count only eligible completed or due orders within one consistent
+          reporting period, excluding future, not-yet-due and cancelled orders. The app has no
+          period or freshness fields, so it cannot check this; keep the period consistent across
+          suppliers yourself.
+        </p>
+        <p>
+          <strong>Needs attention signals</strong> sit alongside the tier and never change it: poor
+          delivery (on-time rate below the active score-3 minimum), sole-source dependency
+          (sole-sourced at P1 to P3) and sole source with too few POs to score. A weighted tier can
+          otherwise look moderate while raw delivery is poor.
+        </p>
         <table className="ref-table">
           <thead>
             <tr>
