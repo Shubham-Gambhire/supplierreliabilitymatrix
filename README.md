@@ -5,7 +5,7 @@ risk using only the data a real procurement team can be expected to maintain.
 
 **Live app**: https://supplierreliabilitymatrix.lovable.app
 
-**Project development report (PDF)**: https://supplierreliabilitymatrix.lovable.app/supplier-reliability-matrix-development-report.pdf
+**Project development document (PRD, PDF)**: https://supplierreliabilitymatrix.lovable.app/supplier-reliability-matrix-development-report.pdf
 
 Prototype status · Not affiliated with, and containing no data from, any employer. All example
 supplier names, locations and industries are fictional.
@@ -50,8 +50,10 @@ This is a transparent heuristic for prioritising review. It is not a calibrated 
 probability, not statistically validated and not an estimate of financial loss. A small weighted
 score was chosen pragmatically for two inputs; methods such as AHP or TOPSIS could also be used.
 
-The bundled PDF development report is **historical**: it describes the earlier model that
-multiplied by the priority factor. The in-app "How this is scored" page is the current method.
+The bundled PRD was updated on 19 October 2026 for model v2. It records current requirements,
+default scoring, validation evidence and remaining limitations. Its editable source is
+[docs/product-requirements.md](docs/product-requirements.md). The in-app "How this is scored"
+page reflects the active settings.
 
 ## Features
 

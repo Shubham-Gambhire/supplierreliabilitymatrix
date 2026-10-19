@@ -21,16 +21,16 @@ export default function MethodologyView({ config }) {
       </section>
 
       <section className="panel">
-        <h3>Historical development report</h3>
-        <p className="notice notice-warn" role="note">
+        <h3>Project development document</h3>
+        <p className="note-line" role="note">
           <span>
-            <strong>Historical document.</strong> The PDF describes an earlier version of the
-            scoring method that multiplied by the priority factor, which made Priority 1 suppliers
-            look safer. That has been corrected. Use this page, not the PDF, for the current method.
+            <strong>Updated 19 October 2026.</strong> The PRD describes model v2, current
+            requirements, validation evidence and remaining limitations using default settings.
+            The calculation tables below reflect your active settings.
           </span>
         </p>
         <a className="report-link" href={REPORT_PDF_URL} target="_blank" rel="noopener noreferrer">
-          <FileText size={15} /> Open the historical development report (PDF, opens in new tab){" "}
+          <FileText size={15} /> Open the updated PRD (PDF, 10 pages, opens in new tab){" "}
           <ArrowUpRight size={13} />
         </a>
       </section>
